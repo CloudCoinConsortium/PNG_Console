@@ -52,6 +52,24 @@ namespace AddToPng
                            }
                         break;
                         case 4:
+                            try
+                            {
+                                savedCoins = getFromPNG(pngPath);//Select the png file.
+
+                            }
+                            catch(Exception e)
+                            {
+                               printError[0] = e.ToString();
+                               consolePrintList(printError, false, "ERROR: ", false);
+                               break;
+                            }
+                            string[] emptyCoins = ccData;
+                            emptyCoins[1] = "No File";
+                            emptyCoins[2] = "Empty";
+                            SaveCoinsToPNG(pngPath, emptyCoins);
+                            printUpdate[3] = "Coins Removed: " + ccData[2] + ", and saved to ./Printouts.";
+                        break;
+                        case 5:
                             makingChanges = false;//Select the png file.
                         break;
                   }
@@ -59,7 +77,44 @@ namespace AddToPng
               }
 
         }
+        public string getFromPNG(string pngPath){
+            string message = "Keys found in " + pngPath + ":";
+            TagLib.Png.File pngFile = (TagLib.Png.File)TagLib.Png.File.Create(pngPath);
+            TagLib.Png.PngTag tag = (TagLib.Png.PngTag)pngFile.GetTag(TagLib.TagTypes.Png, true);
 
+            string[] tags = new string[2];
+            tags[0] = tag.GetKeyword("CCName");
+            tags[1] = tag.GetKeyword("CCValue");
+            consolePrintList(tags, false, message, false); 
+
+            if (tags[0] != null || tags[1] != null) 
+            {
+                      string filename = tags[0].ToString();
+                      message = "Press enter to extract the Cloudcoin stack from "+ filename + ".";
+
+                      if(getEnter(message)){
+                          Console.Out.WriteLine("Stack: " + filename + " has been found");
+                          string CloudCoinAreaValues = tags[1].ToString();
+                          string path ="./Printouts/"+ filename;
+                          try
+                          {
+                              System.IO.File.WriteAllText(path, CloudCoinAreaValues); //Create a document containing Mp3 ByteFile (debugging).
+                          }
+                          catch(Exception e)
+                          {
+                              Console.Out.WriteLine("Failed to save CloudCoin data {0}", e);
+                          }
+                          printUpdate[3] =  "Coins retrieved: " + filename;
+                          return path;
+                      }
+                      return "null";
+            }//end if 
+            else
+            {
+                  Console.Out.WriteLine("no stack in file" + tags[0]);
+                  return "no .stack in file";
+            }//end else
+        }
         public void CheckForCoins(string path, int update){
             string message = "Keys found in " + path + ":";
             TagLib.Png.File pngFile = (TagLib.Png.File)TagLib.Png.File.Create(path);
@@ -85,24 +140,7 @@ namespace AddToPng
             tag.SetKeyword("CCValue",cc[1]);
             image.Save();
         }
-        // public void SaveCoinsToPNG(string png, string[] ccValue){ // ccValue[path, data, name]
-        //     string[] cc = new string[] {"   ", "    ", "    ", "    "} ; // CloudCoin[0] & CloudCoin[3] for buffer.
-        //     cc[2] = ccValue[2];// name
-        //     cc[1] = ccValue[1];// value
-        //     // TagLib.File image = TagLib.File.Create(path);//Selected png to taglib image object.
-        //     TagLib.Png.File pngFile = (TagLib.Png.File)TagLib.Png.File.Create(png);
-        //     // var pngFile = image as TagLib.Png.File; //Ensures we are working with taglibs .png class (done by file ext...)
 
-        //     TagLib.Png.PngTag tag2 = (TagLib.Png.PngTag)pngFile.GetTag(TagLib.TagTypes.Png, true);
-        //     // TagLib.Image.ImageTag tag = (TagLib.Image.ImageTag)pngFile.GetTag(TagLib.TagTypes.Png, true); //Target the pngFiles meta data.
-
-        //     // SetKeyword(keyword, value);
-        //     tag2.SetKeyword(cc[2],cc[1]);
-        //     pngFile.Save();
-        //     printUpdate[0] = tag2.GetKeyword(cc[1]);
-        //     consolePrintList(printUpdate, false, "Saved Coins: ", false);
-        //     CheckForCoins(png);
-        // }
         public string SelectNewPNG(){
             string message = "PNG files found: ";
             string note = "Select the file you wish to use.";
@@ -168,6 +206,17 @@ namespace AddToPng
             int choice = reader.readInt(0, maxNum);
             return choice;
         }
+                  //Method to prompt a user for input. 
+        public static bool getEnter(string message)
+        {     
+            Console.Out.WriteLine("");
+            Console.Out.WriteLine(message);
+            if(Console.ReadKey().Key == ConsoleKey.Enter){
+                return true;
+            }else{
+                return false;
+            }
+        }
 
         //Methods accepts an array of strings. 
         //If indexed? indecese will be numbered 1 through selection.Length. 
@@ -181,7 +230,7 @@ namespace AddToPng
             foreach (string file in selection) 
             {   
                 
-                int fileLength = 200;
+                int fileLength = 120;
                 
                 if(indexed)
                 {
@@ -209,11 +258,13 @@ namespace AddToPng
         public static int printOptions()//One of two possible dialogue screens the user is presented with.
         {
             string note = "Enter your selection: ";
-            string[] userChoices = new string[4];
-            userChoices[0] = "Select your PNG                                                       "; //Option 1
-            userChoices[1] = "Select your CloudCoins                                                "; //Option 2
-            userChoices[2] = "Insert the CloudCoins into the PNG                                    "; //Option 3
-            userChoices[3] = "Quit                                                                  "; //Option 4
+            string[] userChoices = new string[] {
+                "Select your PNG                                                       ",   //Option 1
+                "Select your CloudCoins                                                ",   //Option 2
+                "Insert the CloudCoins into the PNG                                    ",   //Option 3
+                "Get CloudCoins from PNG                                               ",   //Option 4
+                "Quit                                                                  "    //Option 4
+            };
             consolePrintList(userChoices, true, note, false); //1st bool true? message is indexed. 2nd bool, no goBack.
             return getUserInput(userChoices.Length,note);//7? Range of inputs.
         } // End print welcome.

@@ -106,6 +106,8 @@ namespace AddToPng
                     //CoreLogger.Log("Input is not an integer. " + this.errorMessages[INT_MESSAGE]);
                     //CoreLogger.Log(e.ToString());
                     Console.Out.Write(this.prompt);
+                    errorMessages[0] = e.ToString();
+
                 }
 
             }
@@ -136,10 +138,11 @@ namespace AddToPng
                 }
                 catch (FormatException e)
                 {
-                    Console.Out.WriteLine("Input is not an integer. Please enter an integer between " + min + " & " + max);//"Input is not an integer. Please enter an integer between " 
+                    Console.Out.WriteLine(" Input is not an integer. Please enter an integer between " + min + " & " + max);//"Input is not an integer. Please enter an integer between " 
                     //CoreLogger.Log("Input is not an integer. Please enter an integer between " + min + " & " + max);
                     //CoreLogger.Log(e.ToString());
                     Console.Out.Write(this.prompt);
+                    errorMessages[0] = e.ToString();
                 }
             }
             return number;
