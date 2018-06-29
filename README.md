@@ -54,7 +54,8 @@ Inserts the CloudCoins as meta data in the Ape tag.
 
 #### PNG Standard
 ![Header](./Standards/PNG_Header_Standard.png) 
-[Body](./Standards/NPG_Body_Standard.png) 
 
+[Body](./Standards/PNG_Body_Standard.png) 
 
+/Users/Work/Desktop/AddCloudCoinToPNG/
 
