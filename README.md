@@ -53,7 +53,8 @@ Inserts the CloudCoins as meta data in the Ape tag.
 `
 
 #### PNG Standard
-In progress.
+![Header](./Standards/PNG_Header_Standard.png) 
+[Body](./Standards/NPG_Body_Standard.png) 
 
 
 
