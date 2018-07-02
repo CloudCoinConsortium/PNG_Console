@@ -37,7 +37,7 @@ namespace AddToPng
                 {
                     case 1:
                         pngInfo = SelectNewPNG();//Select the png file.
-                        printUpdate[0] = "Image selected: " + pngInfo;
+                        printUpdate[0] = "Image selected: " + pngInfo[2];
                         printUpdate[1] = "Coins staged: ";
                         printUpdate[2] = "Coins Saved: ";
                         printUpdate[3] = "Coins Inserted: ";
