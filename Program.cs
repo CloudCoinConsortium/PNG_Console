@@ -41,6 +41,30 @@ namespace AddToPng
                 {
                     case 1://select new png file.
                         pngInfo = pngManip.SelectNewPNG();//Select the png file.
+                        PngClass png = new PngClass(pngInfo[0]);
+                        Console.WriteLine("pngL: "+png.name);
+                        Console.WriteLine("pngFilePath: "   +png.path);
+                        Console.WriteLine("pngLength: " +png.length);
+                        Console.WriteLine("pngStringName: " +png.name);
+                        // Console.WriteLine("pngByteName: "   +png.pngByteName);
+                        Console.WriteLine("pngByteData: "   +png.data);
+                        Console.WriteLine("pngFileDesignator: " +png.designator);
+
+                        if(png.hasCoins){
+                            Console.WriteLine("coinCount: " +png.count);
+                            Console.WriteLine("pngValue: "  +png.value);
+                            Console.WriteLine("hasCoins: "  +png.hasCoins);
+                            foreach(CoinClass coin in png.listOfCoins){
+                                Console.WriteLine("listOfCoins: "   + coin.val);
+                                Console.WriteLine("listOfCoins: "   + coin.sn);
+                                Console.WriteLine("listOfCoins: "   + coin.name);
+                            }
+                        }
+
+
+
+
+
                         pngbyteFile = System.IO.File.ReadAllBytes(pngInfo[0]);
                         pngLength = pngbyteFile.Length;
                         Console.WriteLine("FL: "+pngLength);
@@ -88,9 +112,8 @@ namespace AddToPng
                             pngLength = pngbyteFile.Length;
 
                             byte[] savedCoins = pngManip.getFromPNG(pngbyteFile, pngLength, pngInfo[1], modifier);//Select the png file.
-                            util.printUpdate[2] = "Status: Saved to " + pngInfo[1]+".stack"; // add name to updates.
-
                             pngManip.deleteCoinFromPNG(pngbyteFile, pngLength, pngInfo[0], pngInfo[1]);
+
                             pngbyteFile = System.IO.File.ReadAllBytes(pngInfo[0]);
                             pngLength = pngbyteFile.Length;
                             modifier++;
@@ -109,6 +132,10 @@ namespace AddToPng
                 }
                 Utils.consolePrintList(util.printUpdate, false, "Updates: ", false);
             }
+        }
+        void selectPng()
+        {
+            
         }
     }
 }

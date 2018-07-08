@@ -22,8 +22,9 @@ namespace AddToPng
         }
         public byte[] getFromPNG(byte[] pngBytes, int length, string pngName, int mod)
         {   //Returns a byte array containing one instance of cLDc.
+                string coinName;
                 //Byte patterns to match against.
-                byte[] endOfCoin = new byte[] {125,93,125};
+                byte[] endOfCoin = new byte[] {123,63,36,125};
                 byte[] cLDc = new byte[] {99, 76, 68, 99};
                 byte[] iEnd = new byte[] {73,69,78,68};
 
@@ -32,23 +33,39 @@ namespace AddToPng
                 List<int> endCoin = returnPos(pngBytes, endOfCoin, length);
                 List<int> endFile = returnPos(pngBytes, iEnd, length);
 
-                Console.WriteLine("startCoin: " + startCoin[0]);
-                Console.WriteLine("endCoin: " + endCoin[0]);
-                Console.WriteLine("endFile: " + endFile[0]);
+                // Console.WriteLine("startCoin: " + startCoin[0]);
+                // Console.WriteLine("endCoin: " + endCoin[0]);
+                // Console.WriteLine("endFile: " + endFile[0]);
 
                 if(startCoin.Any())
                 {
                     int startC = startCoin[0] + 4; //Marks the first instance of cLDc in the png file + 4 to negate the cLDc type.
-                    int endC = endCoin[0] + 3; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes.
+                    int endC = endCoin[0]; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes.
                     int diff = (endC - startC);
                     byte[] coinData = new byte[diff]; //the difference between the numbers will be the length of the coin.
                     for(int i = 0; i<=coinData.Length-1; i++)
                     {
                         coinData[i] = pngBytes[startC + i];
                     }//end for
+                    string file = System.Text.Encoding.UTF8.GetString(coinData);
+                    Console.WriteLine("file: " + file);
                     try//save the png.
                     {
-                        using (var fs = new FileStream("./Printouts/"+pngName+"."+mod+".stack", FileMode.Create, FileAccess.Write))
+                        CoinClass cc = new CoinClass(coinData);
+                        Console.WriteLine("");
+                        Console.WriteLine("With data");
+                        Console.WriteLine("");
+                        Console.WriteLine("data: " + cc.data);
+                        Console.WriteLine("name: " + cc.name);
+                        Console.WriteLine("path: " + cc.path);
+                        Console.WriteLine("tag: " + cc.tag);
+                        Console.WriteLine("val: " + cc.val);
+                        Console.WriteLine("sn: " + cc.sn);
+                        Console.WriteLine("nn: " + cc.nn);
+                        Console.WriteLine("length: " + cc.length);
+
+                        coinName = returnCoinName(coinData);
+                        using (var fs = new FileStream("./Printouts/"+coinName, FileMode.Create, FileAccess.Write))
                         {
                             fs.Write(coinData, 0, coinData.Length);
                         }
@@ -142,6 +159,19 @@ namespace AddToPng
                 if(Utils.getEnter("Press enter to select all files. or any other key to continue.")){
                     foreach(string coin in ccPaths)
                     {
+                        CoinClass cc = new CoinClass(coin);
+                        Console.WriteLine("");
+                        Console.WriteLine("with fp");
+                        Console.WriteLine("");
+                        Console.WriteLine("data: " + cc.data);
+                        Console.WriteLine("name: " + cc.name);
+                        Console.WriteLine("path: " + cc.path);
+                        Console.WriteLine("tag: " + cc.tag);
+                        Console.WriteLine("val: " + cc.val);
+                        Console.WriteLine("sn: " + cc.sn);
+                        Console.WriteLine("nn: " + cc.nn);
+                        Console.WriteLine("length: " + cc.length);
+
                         myStack[0] = coin; //Choose the cloudcoin to be added to the png.
                         myStack[1] = System.IO.Path.GetFileName(coin);//save the stacks name.
                         coinList.Add(myStack);
@@ -215,7 +245,7 @@ namespace AddToPng
             PngMethod method = new PngMethod();
 
             //Byte patterns to match against.
-            byte[] endOfCoin = new byte[] {125,93,125}; //Change when moving from stack.
+            byte[] endOfCoin = new byte[] {123,63,36,125}; //end file marker.
             byte[] cLDc = new byte[] {99, 76, 68, 99};
             byte[] iEnd = new byte[] {73,69,78,68};
 
@@ -226,7 +256,7 @@ namespace AddToPng
             if(startCoin.Any())
             {
                 int startC = startCoin[0] - 4 ; //Marks the first instance of cLDc in the png file + 4 to negate the cLDc type.
-                int endC = endCoin[0] + 6; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes + 4 for crc.
+                int endC = endCoin[0] + 7; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes + 4 for crc.
                 int diff = (endC - startC);
                 int n = 0;
                 byte[] newFile = new byte[pngBytes.Length - diff - 1]; //the size of the new file. 
@@ -254,10 +284,9 @@ namespace AddToPng
             else
                 return null;
         }//end deleteCoinFromPNG();
-        static public List<int> returnPos(byte[] png, byte[] seque, int length) 
+        static public List<int> returnPos(byte[] subject, byte[] seque, int length) 
         {   //Return the starting position for the chunk given by 'seque'.
             List<int> positions = new List<int>();
-
             string name = System.Text.Encoding.Default.GetString(seque);
             int chunkLength = seque.Length;
 
@@ -265,10 +294,10 @@ namespace AddToPng
 
             for (int i = 0; i < length; i++)
             {
-                if (firstMatchByte == png[i] && length - i >= chunkLength)
+                if (firstMatchByte == subject[i] && length - i >= chunkLength)
                 {
                     byte[] match = new byte[chunkLength];
-                    Array.Copy(png, i, match, 0, chunkLength);
+                    Array.Copy(subject, i, match, 0, chunkLength);
                     if (match.SequenceEqual<byte>(seque))
                     {
                         positions.Add(i);
@@ -278,5 +307,55 @@ namespace AddToPng
             }
             return positions;
         }// end returnPos() 
+        static public string returnCoinName(byte[] coin)
+        {
+
+            //Get the serial number from the coin.
+            int length = coin.Length;
+            //The byte patterns to search for. ,"an":
+            byte[] snPattern = new byte[] {(byte)'"',(byte)'s',(byte)'n',(byte)'"',(byte)':'};
+            byte[] snStopPattern= new byte[] {(byte)',',(byte)'"',(byte)'a',(byte)'n',(byte)'"'};
+            byte[] nnPattern = new byte[] {(byte)'"',(byte)'n',(byte)'n',(byte)'"',(byte)':'};
+            
+            //Use the byte patterns to get the locations.
+            List<int> snList = returnPos(coin, snPattern, length);
+            int snLoc = snList[0] + snPattern.Length;
+
+            List<int> snStopList = returnPos(coin, snStopPattern, length);
+            int snLength = snLoc - snStopList[0];
+
+            List<int> nnList = returnPos(coin, nnPattern, length);
+            int nnLoc = nnList[0] + nnPattern.Length;
+
+            //Start building names.
+            string val =        "0"; // First piece of the name, will be 1,5,25,100,250
+            string cc =         ".CloudCoin"; //Second piece of coins name.
+            string nn =         "."+System.Text.Encoding.UTF8.GetString(coin.Skip(nnLoc).Take(1).ToArray())+".";
+            string sn =         System.Text.Encoding.UTF8.GetString(coin.Skip(snLoc).Take(snLength).ToArray()); //The coins serial number. 3rd part.
+            string userTag =    ".userTag";
+            string fileDes =    ".png";
+
+            //Convert the sn into an integer.
+            int intSn = 0;
+            Int32.TryParse(sn, out intSn);
+            Console.WriteLine("string serial number: " + sn);
+            Console.WriteLine("integer serial number: " + intSn);
+
+            //Get the denomination of the coin.
+            if(intSn >= 1 && intSn < 2097153)
+                val = "1";
+            else if(intSn >= 2097153 && intSn < 4194305)
+                val = "5";
+            else if(intSn >= 4194305 && intSn < 6291475)
+                val = "25";
+            else if(intSn >= 6291475 && intSn < 14680065)
+                val = "100";
+            else if(intSn >= 14680065 && intSn < 16777217)
+                val = "250";
+
+            string filename = val+cc+nn+sn+userTag+fileDes;
+            Console.WriteLine("Stackname: " + filename);
+            return filename;
+        }
     }
 }
