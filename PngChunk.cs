@@ -28,6 +28,30 @@ namespace AddToPng
 			// Byte 32-431  Authentication Numbers.
 			// 4 Bytes      Data end Marker
             // 4 Bytes      CRC data
+
+
+        public PngChunk(string pngPath){
+            // Console.WriteLine("get chunk using path: \r\n" + Encoding.Default.GetString(chunk));
+            setPath(pngPath); //path to cloudcoin
+            setData(); 
+            tasks();
+            //The first 4 bytes of the png cLDc chunk represent the length of the data and crc field in the chunk.
+        }
+        public PngChunk(byte[] pngBytes){
+            // Console.WriteLine("get chunk using byte[] \r\n");
+            setData(pngBytes); 
+            tasks();
+            //The first 4 bytes of the png cLDc chunk represent the length of the data and crc field in the chunk.
+        }
+        private void tasks(){
+            setEnd();
+            setLength();
+            setType(); //4 byte chunk type
+            setCrc();
+            createChunk();
+            setChunkLength();
+        }
+
         string path_;
         int chunkLength_;
         byte[] end_; // 4 byte  data end designator. 
@@ -71,16 +95,16 @@ namespace AddToPng
     private void setEnd()
     {//returns a 4 byte sequence ?$?$ to mark the end of the data portion of the chunk.
         end = new byte[] {(byte)'{', (byte)'?', (byte)'$', (byte)'}'};
-        foreach(byte b in end)
-            Console.WriteLine("byteLength: " + b.ToString()); 
+        // foreach(byte b in end)
+            // Console.WriteLine("setEnd: " + b.ToString()); 
     }
     private void setData(){
         data = System.IO.File.ReadAllBytes(path);
-        Console.WriteLine("data: " + Encoding.Default.GetString(data)); 
+        // Console.WriteLine("data: in pngChunk set using path"); 
      }
     private void setData(byte[] d){
-
         data =  d;
+        // Console.WriteLine("data: in pngChunk set using bytes"); 
      }
     private void setLength(){
         //The first 4 bytes of the png cLDc chunk represent the length of the data and crc field in the chunk. 
@@ -89,18 +113,18 @@ namespace AddToPng
         int initLength = data.Length + end.Length;
         byte[] len = BitConverter.GetBytes(initLength);
         length = len;
-        Console.WriteLine(length);
-        foreach(byte b in length)
-            Console.WriteLine("byteLength: " + b.ToString()); 
+        // Console.WriteLine("length: " + Convert.ToString(length));
+        // foreach(byte b in length)
+            // Console.WriteLine("byteLength: " + b.ToString()); 
     }
     private void setType(){
         type = new byte[] {(byte)'c',(byte)'L',(byte)'D',(byte)'c'}; // 4 byte Chunk ID. cLDc
-        foreach(byte b in type)
-            Console.WriteLine("byteLength: " + b.ToString()); 
+        // foreach(byte b in type)
+            // Console.WriteLine("byteType: " + b.ToString()); 
     }
     private void setChunkLength(){
        chunkLength = chunk.Length;
-       Console.WriteLine("chunkLength: " + chunkLength);
+    //    Console.WriteLine("chunkLength: " + chunkLength);
     }
     
     private void setCrc(){
@@ -115,23 +139,19 @@ namespace AddToPng
         uint checksum = QuickCrc32.Compute(chunkInfo); //get the crc. 
         byte[] crcBytes = BitConverter.GetBytes(checksum);
         crc = crcBytes;
-        foreach(byte b in crc)
-            Console.WriteLine("byteLength: " + b.ToString()); 
+        // foreach(byte b in crc)
+            // Console.WriteLine("byteLength: " + b.ToString()); 
     }
     private void createChunk(){
-        
-        
 
         int l1 = length.Length;
         int l2 = type.Length;
         int l3 = data.Length;
         int l4 = end.Length;
         int l5 = crc.Length;
+
         int totalLength = l1+l2+l3+l4+l5;
         byte[] ccChunk = new byte[totalLength];
-
-//        public static byte[] Combine(byte[] first, byte[] second, byte[] third)
-
 
         Buffer.BlockCopy(length, 0, ccChunk, 0, l1);
         Buffer.BlockCopy(type, 0, ccChunk, l1, l2);
@@ -139,32 +159,14 @@ namespace AddToPng
         Buffer.BlockCopy(end, 0, ccChunk, l1+l2+l3, l4);
         Buffer.BlockCopy(crc, 0, ccChunk, l1+l2+l3+l4, l5);
         
+
+        
         chunk = ccChunk;
-    }
-    private void tasks(){
-            setEnd();
-            setLength();
-            setType(); //4 byte chunk type
-            setCrc();
-            createChunk();
-            setChunkLength();
+        Console.WriteLine("New Chunk: ");
+        Hex.Dump(chunk);
 
     }
 
-
-        public PngChunk(string pngPath){
-            // Console.WriteLine("get chunk using path: \r\n" + Encoding.Default.GetString(chunk));
-            setPath(pngPath); //path to cloudcoin
-            setData(); 
-            tasks();
-            //The first 4 bytes of the png cLDc chunk represent the length of the data and crc field in the chunk.
-        }
-        public PngChunk(byte[] pngBytes){
-            // Console.WriteLine("get chunk using byte[] \r\n" + Encoding.Default.GetString(chunk));
-            setData(pngBytes); 
-            tasks();
-            //The first 4 bytes of the png cLDc chunk represent the length of the data and crc field in the chunk.
-        }
     }
 }
      

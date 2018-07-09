@@ -109,11 +109,15 @@ namespace AddToPng
                     errorMessages[0] = e.ToString();
 
                 }
-
             }
-            if(number > -1)
-                return number;
-            return number = readInt();
+            try{
+            return number;
+            }catch(Exception e)
+            {
+                Console.WriteLine("exeption: " + e);
+                return -1;
+            }
+            
         }
 
         public int readInt(int min, int max)
@@ -146,6 +150,7 @@ namespace AddToPng
                     errorMessages[0] = e.ToString();
                 }
             }
+            Console.WriteLine("READER: " + number);
             return number;
         }
         public int readInt(int[] args)

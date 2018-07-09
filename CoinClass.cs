@@ -11,22 +11,22 @@ namespace AddToPng
 //Constructors
         public CoinClass(byte[] CloudCoin){
             setData(CloudCoin);
-            Console.WriteLine("Byte Data is set now");
             updateCoin();
         }
         public CoinClass(string ccPath){
             setPath(ccPath);
             setData();
-            Console.WriteLine("ccPath Data is set now");
             updateCoin();
         }
         public void updateCoin(){
             setSn();
             setNn();
             setLength();
-            setVal();
+            setStrVal();
             setName();
             setTag();
+            setIntVal();
+            Console.WriteLine("<CoinClass> ccPath Data is set now");
         }
 
  // Properties.
@@ -35,8 +35,9 @@ namespace AddToPng
         byte[] nnStart                     = new byte[] {34,110,110,34,58}; // " n n " :  no end needed only 1 number
 
         private PngChunk pngChunk_; // the pngChunk of the coin itself.
-        private string name_, path_, tag_, sn_, nn_, val_; 
-        private int length_; // the coins denomination. or the value of the stack.
+        private string name_, path_, tag_, sn_, nn_, strVal_; 
+        private int length_, intVal_; // the coins denomination. or the value of the stack.
+        private byte[] ccData_;
 
         public PngChunk pngChunk{         get{    return pngChunk_;  }
                                     set{    pngChunk_ = value; }   
@@ -50,8 +51,8 @@ namespace AddToPng
         public string tag{          get{    return tag_;  }
                                     set{    tag_ = value; }   
         }//end tag added on to the coins file name.
-        public string val{             get{    return val_;  }
-                                    set{    val_ = value; }   
+        public string strVal{             get{    return strVal_;  }
+                                    set{    strVal_ = value; }   
         }//end val the coins denomination. or the value of the stack.
         public string sn{              get{    return sn_;  }
                                     set{    sn_ = value; }   
@@ -62,39 +63,51 @@ namespace AddToPng
         public int length{              get{    return length_;  }
                                     set{    length_ = value; }   
         }//end length of coin file.
+        public int intVal{              get{    return intVal_;  }
+                                    set{    intVal_ = value; }   
+        }//end length of coin file.
+        public byte[] ccData{              get{    return ccData_;  }
+                                    set{    ccData_ = value; }   
+        }//end length of coin file.
    
 // Mutators.
         void setData(byte[] cloudCoinBytes){ //Sets the pngChunk from the param.
             pngChunk = new PngChunk(cloudCoinBytes);
-            Console.WriteLine("Path pngChunk: " + Encoding.Default.GetString(pngChunk.chunk));
+            ccData = cloudCoinBytes;
+            // Console.WriteLine("Byte pngChunk: CoinClass" );
         }//end setData
         void setData(){ //Sets the pngChunk from the save location.
             pngChunk = new PngChunk(path);
-            Console.WriteLine("Path pngChunk: " + Encoding.Default.GetString(pngChunk.chunk));
+            // Console.WriteLine("Path pngChunk: CoinClass" );
         }//end setData
         void setName(){
-            name = val + ".CloudCoin." + nn + "." + sn + "." + tag + ".Stack";
+            name = strVal + ".CloudCoin." + nn + "." + sn + "." + tag + ".stack";
         }//end setName
         void setPath(string p){
             path = p;
         }//end setPath
         void setTag(){
            tag = "uniqueTag";
-        }//end setTag
-        void setVal(){
-            val = "0";
+        }//end setTag 
+        void setIntVal(){
+           int tempVal = 0;
+           Int32.TryParse(sn, out tempVal);
+           intVal = tempVal;
+        }//end setTag 
+        void setStrVal(){
+            strVal = "0";
             int intSn = 0; //Parse the serial number from string to int.
             Int32.TryParse(sn, out intSn);
             if(intSn >= 1 && intSn < 2097153)
-                val = "1";
+                strVal = "1";
             else if(intSn >= 2097153 && intSn < 4194305)
-                val = "5";
+                strVal = "5";
             else if(intSn >= 4194305 && intSn < 6291475)
-                val = "25";
+                strVal = "25";
             else if(intSn >= 6291475 && intSn < 14680065)
-                val = "100";
+                strVal = "100";
             else if(intSn >= 14680065 && intSn < 16777217)
-                val = "250";
+                strVal = "250";
         }//end setVal
         void setSn(){
             List<int> snBegin = returnPos(pngChunk.chunk, snStart);

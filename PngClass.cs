@@ -101,7 +101,7 @@ namespace AddToPng
             value = 0;
             int temp = 0;
             foreach(CoinClass coin in listOfCoins){
-                Int32.TryParse(coin.val, out temp);
+                Int32.TryParse(coin.strVal, out temp);
                 value += temp;
             }
         }
@@ -227,31 +227,37 @@ namespace AddToPng
                 {
                     foreach(string coinPath in ccPaths)
                     {
-                        Console.WriteLine(coinPath);
+                        // Console.WriteLine(coinPath);
                         coin = new CoinClass(coinPath);
+                        Console.WriteLine("stage Coins: ");
+                        Hex.Dump(coin.pngChunk.chunk);
                         listOfStagedCoins.Add(coin);
                     }
-                    addCoins = false;   
+                    addCoins = false;  
+                    setHasStagedCoins(); 
                 }//end if
                 else
                 {
                     while(addCoins)
                     {   
-                        if(Utils.getEnter("Press enter to accept your choices, press space to add more coins.")){
-                            addCoins = false;
-                        }
-                        int choice = Utils.getUserInput(ccPaths.Length, "Select the file you wish to use.") - 1;
-    
-                        if (choice > -1)
+                        int choice = Utils.getUserInput(ccPaths.Length, "Select the file you wish to use. or enter 0(zero when done)");
+                        Console.WriteLine("Choice at switch: " + choice);
+                        switch(choice)
                         {
-                            ccPath = ccPaths[choice]; //Choose the cloudcoin to be added to the png.
-                            coin = new CoinClass(ccPath);
-                            listOfStagedCoins.Add(coin);
-                        }//end if
-
+                            case 0:
+                                addCoins = false;
+                            break;
+                            default:
+                                ccPath = ccPaths[choice]; //Choose the cloudcoin to be added to the png.
+                                coin = new CoinClass(ccPath);
+                                listOfStagedCoins.Add(coin);
+                                Console.WriteLine("staged: ");
+                            break;
+                        }
+                    setHasStagedCoins();
                     }//end while
                 }//end else
-                setHasStagedCoins();
+                
 
 
                 Console.WriteLine("--");
@@ -261,7 +267,7 @@ namespace AddToPng
                     Console.WriteLine(  "Name:       " + coin.name + "\r\n" +
                                     "Tag:       " + coin.tag + "\r\n" +
                                     "Sn:       " + coin.sn + "\r\n" +
-                                    "Value:     " + coin.val + "              "
+                                    "Value:     " + coin.strVal + "              "
                     );
                 Console.WriteLine("-staged-");
                 }
@@ -293,6 +299,7 @@ namespace AddToPng
                 byte[] secondPart = data.Skip(firstBitLocation).Take(12).ToArray();
                 bf = firstPart.Concat(coinData).Concat(secondPart);
                 byte[] finalFile = bf.Take(bf.Count()).ToArray();
+                Console.WriteLine("Saving: ");
                 try//save the png.
                 {
                     using (var fs = new FileStream("./png/"+name, FileMode.Create, FileAccess.Write))
@@ -313,22 +320,21 @@ namespace AddToPng
 
             while(hasCoins)
             {
-                //Byte patterns to match against.
-                byte[] endOfCoin = new byte[] {123,63,36,125}; //end file marker.
-                byte[] cLDc = new byte[] {99, 76, 68, 99};
-                byte[] iEnd = new byte[] {73,69,78,68};
-
                 //Check for the possitions. if startCoin exists there is a coin in the file.
-                List<int> startCoin = returnPos(data, cLDc); //marks first "cLDc" tag in file.
-                List<int> endCoin = returnPos(data, endOfCoin);
+                List<int> startCoin = returnPos(data, ccStart); //marks first "cLDc" tag in file.
+                startCoin.Sort();
+                List<int> endCoin = returnPos(data, ccEnd); // {?$}
+                endCoin.Sort();
                 
                 if(startCoin.Any())
                 {
-                    int startC = startCoin[0] - 4 ; //Marks the first instance of cLDc in the png file + 4 to negate the cLDc type.
-                    int endC = endCoin[0]; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes + 4 for crc.
+                    int startC = startCoin[0] - 3; //Marks the first instance of cLDc in the png file + 4 to negate the cLDc type.
+                    int endC = endCoin[0] + 8; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes + 4 for crc.
                     int diff = (endC - startC);
+
                     int n = 0;
                     byte[] newFile = new byte[length - diff - 1]; //the size of the new file. 
+                    byte[] thisCoin = data.Skip(startC+7).Take(diff-15).ToArray();
                     for(int i = 0; i < length; i++)
                     {
                         if(i<startC || i > endC)
@@ -337,6 +343,22 @@ namespace AddToPng
                             n++;
                         }//end if
                     }//end for
+
+
+                     try//save the coin.
+                    {
+                        CoinClass cc = new CoinClass(thisCoin);
+                        using (var fs = new FileStream("./Printouts/"+cc.name, FileMode.Create, FileAccess.Write))
+                        {
+                            fs.Write(cc.ccData, 0, cc.ccData.Length);
+                        }
+                    }//end try
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Exception caught in process: {0}", ex);
+                    }//end catch
+
+
                     try//save the png.
                     {
                         using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
