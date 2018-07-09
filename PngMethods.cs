@@ -52,18 +52,6 @@ namespace AddToPng
                     try//save the png.
                     {
                         CoinClass cc = new CoinClass(coinData);
-                        Console.WriteLine("");
-                        Console.WriteLine("With data");
-                        Console.WriteLine("");
-                        Console.WriteLine("data: " + cc.data);
-                        Console.WriteLine("name: " + cc.name);
-                        Console.WriteLine("path: " + cc.path);
-                        Console.WriteLine("tag: " + cc.tag);
-                        Console.WriteLine("val: " + cc.val);
-                        Console.WriteLine("sn: " + cc.sn);
-                        Console.WriteLine("nn: " + cc.nn);
-                        Console.WriteLine("length: " + cc.length);
-
                         coinName = returnCoinName(coinData);
                         using (var fs = new FileStream("./Printouts/"+coinName, FileMode.Create, FileAccess.Write))
                         {
@@ -85,15 +73,15 @@ namespace AddToPng
         public byte[] SaveCoinsToPNG(byte[] png, byte[] cc, string pngName, string ccName, int pngLength, int ccLength)
         { 
             
-            //Separate the png into two files 
-            //Upto and not including 'IEND chunk' -firstHalf
-            //The cloudCoin data being inserted -coinBytes
-            //Location, type, and crc of IEND) -secondHalf
+            // Separate the png into two files 
+            // Upto and not including 'IEND chunk' -firstHalf
+            // The cloudCoin data being inserted -coinBytes
+            // Location, type, and crc of IEND) -secondHalf
 
-            //cloudcoin chunk
-            PngChunk chunk = new PngChunk(); //Start creating a cLDc chunk to insert in png.
-            byte[] coin = chunk.setChunk(cc); //return the cloud coin file as a png chunk.
-            ccLength = coin.Length;
+            // cloudcoin chunk
+            PngChunk chunk = new PngChunk(png); //Start creating a cLDc chunk to insert in png.
+            byte[] coin = chunk.chunk; //return the cloud coin file as a png chunk.
+            // ccLength = coin.Length;
             //first section (header / image body)Int32.Parse(TextBoxD1.Text);
             byte[] iEnd = new byte[] {73,69,78,68};
 
@@ -141,13 +129,12 @@ namespace AddToPng
         }//end saveCoinsToPng()
 
 
-        //selects the cloudcoin file to be inserted in the png. 
+        // selects the cloudcoin file to be inserted in the png. 
         public List<string[]> getStack()
         {
             List<string[]> coinList = new List<string[]>();//allow for multiple coins.
 
             string[] myStack = new String[2];
-            PngChunk chunk = new PngChunk();
             bool addCoins = true;
 
             try
@@ -160,17 +147,6 @@ namespace AddToPng
                     foreach(string coin in ccPaths)
                     {
                         CoinClass cc = new CoinClass(coin);
-                        Console.WriteLine("");
-                        Console.WriteLine("with fp");
-                        Console.WriteLine("");
-                        Console.WriteLine("data: " + cc.data);
-                        Console.WriteLine("name: " + cc.name);
-                        Console.WriteLine("path: " + cc.path);
-                        Console.WriteLine("tag: " + cc.tag);
-                        Console.WriteLine("val: " + cc.val);
-                        Console.WriteLine("sn: " + cc.sn);
-                        Console.WriteLine("nn: " + cc.nn);
-                        Console.WriteLine("length: " + cc.length);
 
                         myStack[0] = coin; //Choose the cloudcoin to be added to the png.
                         myStack[1] = System.IO.Path.GetFileName(coin);//save the stacks name.

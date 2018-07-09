@@ -111,8 +111,9 @@ namespace AddToPng
                 }
 
             }
-
-            return number;
+            if(number > -1)
+                return number;
+            return number = readInt();
         }
 
         public int readInt(int min, int max)

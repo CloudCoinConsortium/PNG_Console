@@ -6,8 +6,7 @@ namespace AddToPng
     class Utils{
         
         public string[] printError = new string[1];
-        public string[] printUpdate = new string[] { "Image selected: ", "Coins staged: ", "Coins Saved: ", "Coins Inserted: " };
- 
+         
         public static KeyboardReader reader = new KeyboardReader();
 
         //Methods accepts an array of strings. 
@@ -49,6 +48,7 @@ namespace AddToPng
         {
             Console.Out.WriteLine("");
             Console.Out.WriteLine(message);
+            //
             int choice = reader.readInt(0, maxNum);
             return choice;
         }

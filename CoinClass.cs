@@ -8,25 +8,42 @@ namespace AddToPng
 {
     public class CoinClass
     {
+//Constructors
+        public CoinClass(byte[] CloudCoin){
+            setData(CloudCoin);
+            Console.WriteLine("Byte Data is set now");
+            updateCoin();
+        }
+        public CoinClass(string ccPath){
+            setPath(ccPath);
+            setData();
+            Console.WriteLine("ccPath Data is set now");
+            updateCoin();
+        }
+        public void updateCoin(){
+            setSn();
+            setNn();
+            setLength();
+            setVal();
+            setName();
+            setTag();
+        }
 
+ // Properties.
         byte[] snStart                     = new byte[] {34,115,110,34,58}; // " s n " :
         byte[] snEnd                       =  new byte[] {44,34,97,110,34}; // , " a n "
         byte[] nnStart                     = new byte[] {34,110,110,34,58}; // " n n " :  no end needed only 1 number
 
-        private byte[] data_; // the data of the coin itself.
+        private PngChunk pngChunk_; // the pngChunk of the coin itself.
         private string name_, path_, tag_, sn_, nn_, val_; 
         private int length_; // the coins denomination. or the value of the stack.
 
-
- 
- 
- // Properties.
-        public byte[] data{         get{    return data_;  }
-                                    set{    data_ = value; }   
-        }//end data
+        public PngChunk pngChunk{         get{    return pngChunk_;  }
+                                    set{    pngChunk_ = value; }   
+        }//end pngChunk
         public string name{         get{    return name_;  }
                                     set{    name_ = value; }   
-        }//end name created from coins data.
+        }//end name created from coins pngChunk.
         public string path{         get{    return path_;  }
                                     set{    path_ = value; }   
         }//end path to the destination folder.
@@ -47,11 +64,13 @@ namespace AddToPng
         }//end length of coin file.
    
 // Mutators.
-        void setData(byte[] cc){ //Sets the data from the param.
-            data = cc;
+        void setData(byte[] cloudCoinBytes){ //Sets the pngChunk from the param.
+            pngChunk = new PngChunk(cloudCoinBytes);
+            Console.WriteLine("Path pngChunk: " + Encoding.Default.GetString(pngChunk.chunk));
         }//end setData
-        void setData(){ //Sets the data from the save location.
-            data = System.IO.File.ReadAllBytes(path);
+        void setData(){ //Sets the pngChunk from the save location.
+            pngChunk = new PngChunk(path);
+            Console.WriteLine("Path pngChunk: " + Encoding.Default.GetString(pngChunk.chunk));
         }//end setData
         void setName(){
             name = val + ".CloudCoin." + nn + "." + sn + "." + tag + ".Stack";
@@ -78,40 +97,20 @@ namespace AddToPng
                 val = "250";
         }//end setVal
         void setSn(){
-            List<int> snBegin = returnPos(data, snStart);
-            List<int> snStop = returnPos(data, snEnd);
+            List<int> snBegin = returnPos(pngChunk.chunk, snStart);
+            List<int> snStop = returnPos(pngChunk.chunk, snEnd);
             int snLoc = snBegin[0] + snStart.Length;
             int snLength = snStop[0] - snLoc;
-            sn = System.Text.Encoding.UTF8.GetString(data.Skip(snLoc).Take(snLength).ToArray());
+            sn = System.Text.Encoding.UTF8.GetString(pngChunk.chunk.Skip(snLoc).Take(snLength).ToArray());
         }//end setSn
         void setNn(){
-            List<int> nnList = returnPos(data, nnStart);
+            List<int> nnList = returnPos(pngChunk.chunk, nnStart);
             int nnLoc = nnList[0] + nnStart.Length;
-            nn = System.Text.Encoding.UTF8.GetString(data.Skip(nnLoc).Take(1).ToArray());
+            nn = System.Text.Encoding.UTF8.GetString(pngChunk.chunk.Skip(nnLoc).Take(1).ToArray());
         }//end setNn
         void setLength(){
-            length = data.Length;
+            length = pngChunk.chunkLength;
         }//end setLength
-        void updateCoin(){
-            setSn();
-            setNn();
-            setLength();
-            setVal();
-            setName();
-            setTag();
-        }
-
-
-//Constructors
-        public CoinClass(byte[] CloudCoin){
-            setData(CloudCoin);
-            updateCoin();
-        }
-        public CoinClass(string ccPath){
-            setPath(ccPath);
-            setData();
-            updateCoin();
-        }
 
 
 //Local class specific methods

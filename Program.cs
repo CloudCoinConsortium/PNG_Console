@@ -6,24 +6,59 @@ using System.Linq;
 
 namespace AddToPng
 {
+    ///Class discriptions
+    //      Program
+
+    //      PngClass
+    //          -Constructor
+    //              -PngClass() , will prompt user to choose a png.
+    //          -Accessors
+    //              - string name
+    //              - string path
+    //              - string designator
+    //              - int length
+    //              - int count
+    //              - int value
+    //              - byte[] data
+    //              - List <CoinClass> listOfCoins
+    //              - List <CoinClass> listOfStagedCoins
+    //              - bool hasCoins
+    //              - bool hasStagedCoins
+    //
+    //
+    //
+    //      CoinClass
+    //          -Constructors
+    //              -CoinClass(string pathToCloudCoin)
+    //              -CoinClass(byte[] cloudCoinsByteFile)
+    //          -Accessors
+    //              - PngChunk .pngChunk = PngChunk(cloudcoin) easy access to the needed pngChunk.
+    //              - string .name = The name of this coin. ie 250.CloudCoin.1.11111111.tag.Stack
+    //              - string .path = Coins that are not in a png will have a path.
+    //              - string .tag  = Used for creating the Stack name.
+    //              - string .val  = Value of this Coin. 
+    //              - string .sn   = This coins Serial number.
+    //              - string .nn   = This coins Network number.
+    //              - int .length = The same as PngChunk.chunkLength 
+    //
+    //
+    //      PngChunk
+    //          -Constructors
+    //              -PngChunk(string pathToCloudCoin)
+    //              -PngChunk(byte[] cloudCoinsByteFile)
+    //          -Accessor
+    //              -byte[] .chunk = the cloudCoinData ready to be inserted as a png chunk.
+    //              -int .chunkLength = numeric representation of the chunk size.
+    //
+
     class Program
     {
         Encoding FileEncoding = Encoding.ASCII;
-
-        //Storage for png
-        byte[] pngbyteFile;     
-        int pngLength = 0; 
-        string[] pngInfo = new string[2];// [0]FilePath [1]FileName => stores png file information.
-
-
-        //Storage for CloudCoin
-        byte[] coinBytes;
-        int coinLength = 0;
-        List <string[]> coinInfo = new List<string[]>(); //includes string[Fp, Fn] => [0]FilePath, [1]FileName => to store the CloudCoins before insertion. 
-
+        private string[] status_;
+        public string [] status {    get{ return status_; }
+                                    set { status_ = value; }
+                                }//end
         //Track activity
-        public string[] printUpdate = new string[] { "PNG staged: ", "Coins staged: ", "Status: ", "Additional info: none" };
-
         static void Main(string[] args)
         {
             Program prog = new Program();
@@ -31,111 +66,68 @@ namespace AddToPng
         }
         void runProgram()
         {
-            PngMethod pngManip = new PngMethod();
+            
             Utils util = new Utils();
+            PngClass png = new PngClass();
             bool makingChanges = true;
             while (makingChanges)
             {
+                setStatus(png);
                 int choice = Utils.printOptions(); //Display user choices.
                 switch (choice)
                 {
                     case 1://select new png file.
-                        pngInfo = pngManip.SelectNewPNG();//Select the png file.
-                        PngClass png = new PngClass(pngInfo[0]);
-                        Console.WriteLine("pngL: "+png.name);
-                        Console.WriteLine("pngFilePath: "   +png.path);
-                        Console.WriteLine("pngLength: " +png.length);
-                        Console.WriteLine("pngStringName: " +png.name);
-                        // Console.WriteLine("pngByteName: "   +png.pngByteName);
-                        Console.WriteLine("pngByteData: "   +png.data);
-                        Console.WriteLine("pngFileDesignator: " +png.designator);
-
-                        if(png.hasCoins){
-                            Console.WriteLine("coinCount: " +png.count);
-                            Console.WriteLine("pngValue: "  +png.value);
-                            Console.WriteLine("hasCoins: "  +png.hasCoins);
-                            foreach(CoinClass coin in png.listOfCoins){
-                                Console.WriteLine("listOfCoins: "   + coin.val);
-                                Console.WriteLine("listOfCoins: "   + coin.sn);
-                                Console.WriteLine("listOfCoins: "   + coin.name);
-                            }
-                        }
-
-
-
-
-
-                        pngbyteFile = System.IO.File.ReadAllBytes(pngInfo[0]);
-                        pngLength = pngbyteFile.Length;
-                        Console.WriteLine("FL: "+pngLength);
-                
-                        util.printUpdate[0] = "PNG staged: " + pngInfo[1]; // add name to updates.
-                        util.printUpdate[1] = "Coins staged: none";  // add name to updates.
-                        util.printUpdate[2] = "Status: ";  // add name to updates.
-                        util.printUpdate[3] = "Additional info: none";  // add name to updates.
-
-                        if(pngManip.checkForCoin(pngbyteFile, pngLength))
-                        {
-                                util.printUpdate[3] = "Status: coins found"; // add name to updates.
-                        }
-                        else
-                        {
-                                util.printUpdate[3] = "Status: no coins found"; // add name to updates.
-                        }
-
+                        png = new PngClass();
                         break;
                     case 2://select cloudcoins
-                        coinInfo = pngManip.getStack();//Select the stack to insert.
-
-                        util.printUpdate[1] = "Coins staged: " + coinInfo.Count; // add name to updates.
+                        png.stageCoins();
                         break;
                     case 3://insert cloudcoins to png ([byte[] data][string Names][int length])
-                        foreach(string[] coin in coinInfo)
-                        {
-                            coinBytes = System.IO.File.ReadAllBytes(coin[0]);
-                            coinLength = coinBytes.Length;
-                            pngbyteFile = pngManip.SaveCoinsToPNG(pngbyteFile, coinBytes, pngInfo[1], coin[1], pngLength, coinLength);//Select the png file.
-                            pngLength = pngbyteFile.Length;
-
-                            coinBytes = null;
-                            coinLength = 0;
-                            util.printUpdate[2] += coin[1]+"\n"; // add name to updates.
-                        }
-                        util.printUpdate[1] = "Coins staged: none" ; // add name to updates.
+                        if(png.hasStagedCoins)
+                            png.SaveCoins();
                         break;
                     case 4://retrieve cloudcoins from png
-                        int modifier = 0;
-                        bool cLDcExists = pngManip.checkForCoin(pngbyteFile, pngLength);
-                        while(cLDcExists)
-                        {
-                            pngbyteFile = System.IO.File.ReadAllBytes(pngInfo[0]);
-                            pngLength = pngbyteFile.Length;
-
-                            byte[] savedCoins = pngManip.getFromPNG(pngbyteFile, pngLength, pngInfo[1], modifier);//Select the png file.
-                            pngManip.deleteCoinFromPNG(pngbyteFile, pngLength, pngInfo[0], pngInfo[1]);
-
-                            pngbyteFile = System.IO.File.ReadAllBytes(pngInfo[0]);
-                            pngLength = pngbyteFile.Length;
-                            modifier++;
-                            cLDcExists = pngManip.checkForCoin(pngbyteFile, pngLength);
-                            if(modifier > 2000)
-                            {
-                                cLDcExists = false;
-                            }
-                        }
-
-                        util.printUpdate[3] = "Status: no coins found: "; // add name to updates.
+                        png.removeCoins();
                         break;
                     case 5://quit
                         makingChanges = false;//Select the png file.
                         break;
                 }
-                Utils.consolePrintList(util.printUpdate, false, "Updates: ", false);
+                if(png.hasCoins){
+                    
+                }
             }
-        }
-        void selectPng()
-        {
-            
-        }
+        }// end runProgram
+        private void setStatus(PngClass png){ 
+            if(png.hasCoins){
+                List<CoinClass> coinList = png.listOfCoins;               
+                status = new string[] {
+                  "File: " + png.name,
+                  "Coins found: " + png.count, 
+                  "Value of png: " + png.value
+                };
+                foreach(CoinClass coin in coinList){
+                    Console.WriteLine("--");
+                    Console.WriteLine(  "Name:       " + coin.name + "\r\n" +
+                                        "Tag:       " + coin.tag + "\r\n" +
+                                        "Sn:       " + coin.sn + "\r\n" +
+                                        "Value:     " + coin.val + "              "
+                    );
+                    Console.WriteLine("--");
+                }
+            }
+            else{
+                status = new string[] {
+                  "File: " + png.name,
+                  "Coins: " + png.count
+                };
+                if(png.hasStagedCoins){
+                    foreach(CoinClass coin in png.listOfStagedCoins){
+                        Console.WriteLine(  "Name:       " + coin.name + "\r\n");
+                    }
+                }
+            }
+            Utils.consolePrintList(status_, false, "Updates: ", false);
+        }//end status()
     }
 }
