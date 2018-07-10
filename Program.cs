@@ -99,12 +99,13 @@ namespace AddToPng
             }
         }// end runProgram
         private void setStatus(PngClass png){ 
-            if(png.hasCoins){
+            if(png.hasCoins)
+            {
                 List<CoinClass> coinList = png.listOfCoins;               
                 status = new string[] {
                   "File: " + png.name,
                   "Coins found: " + png.count, 
-                  "Value of png: " + png.value
+                  "Value of png: " + png.storedVal
                 };
                 foreach(CoinClass coin in coinList){
                     Console.WriteLine("--");
@@ -116,30 +117,24 @@ namespace AddToPng
                     Console.WriteLine("--");
                 }
             }
-            else{
-
-                status = new string[] {
-                  "File: " + png.name,
-                  "Coins: 0" 
-                };
-                
-                if(png.hasStagedCoins){
-                    string names = "Name:       ";
-                    int stagedVal = 0;
-                    string stagedStrVal = "";
-                    int i = 0;
-                    string[] updateStagedCoins = new string[png.listOfStagedCoins.Count()];
-                    foreach(CoinClass coin in png.listOfStagedCoins){
-                        updateStagedCoins[i] = coin.name + ": Staged            ";
-                        stagedVal += coin.intVal;
-
-                    }
-                    stagedStrVal = stagedVal.ToString();
-                    Utils.consolePrintList(updateStagedCoins, false, "Staged coins: ", false);
-                    Console.WriteLine("                     -----                       ");
-                    Console.WriteLine("--Staged value: " + stagedStrVal);
-                    Console.WriteLine("--Staged count: " + png.listOfStagedCoins.Count());
+            if(png.hasStagedCoins)
+            {
+                string names = "Name:       ";
+                int stagedVal = 0;
+                string stagedStrVal = "";
+                int i = 0;
+                string[] updateStagedCoins = new string[png.listOfStagedCoins.Count()];
+                foreach(CoinClass coin in png.listOfStagedCoins){
+                    updateStagedCoins[i] = coin.name + ": Staged            ";
+                    stagedVal += coin.intVal;
+                    i++;
                 }
+                stagedStrVal = stagedVal.ToString();
+                Utils.consolePrintList(updateStagedCoins, false, "Staged coins: ", false);
+                Console.WriteLine("                     -----                       ");
+                Console.WriteLine("--Staged value: " + png.stagedVal);
+                Console.WriteLine("--Staged count: " + png.listOfStagedCoins.Count());
+                
             }
             
             Utils.consolePrintList(status_, false, "Updates: ", false);

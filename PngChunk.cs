@@ -54,6 +54,7 @@ namespace AddToPng
 
         string path_;
         int chunkLength_;
+        int val_;
         byte[] end_; // 4 byte  data end designator. 
         byte[] data_;
         byte[] length_;    // length (4 bytes) representation of the chunks length
@@ -88,6 +89,9 @@ namespace AddToPng
         public int chunkLength{           get{   return chunkLength_;  }
                                         set{    chunkLength_ = value;}
                                 }//end chunkLength
+        public int val{           get{   return val_;  }
+                                        set{    val_ = value;}
+                                }//end val
 
     public void setPath(string p){
         path = p;

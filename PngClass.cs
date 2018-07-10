@@ -25,7 +25,7 @@ namespace AddToPng
 
             //PNG specific
         private string name_, path_, designator_;
-        private int length_, count_, value_;
+        private int length_, count_, storedVal_, stagedVal_;
         private byte[] data_;
         private List <CoinClass> listOfCoins_;
         private List <CoinClass> listOfStagedCoins_;
@@ -52,8 +52,11 @@ namespace AddToPng
         public int count{                   get{      return count_; }
                                             set{    count_ = value; }
             }//end count of CloudCoin cLDc chunks in the png
-        public int value{                   get{      return value_; }
-                                            set{    value_ = value; }
+        public int storedVal{                   get{      return storedVal_; }
+                                            set{    storedVal_ = value; }
+            }//end total value of the png file
+        public int stagedVal{                   get{      return stagedVal_; }
+                                            set{    stagedVal_ = value; }
             }//end total value of the png file
         public List<CoinClass> listOfCoins{    get{      return listOfCoins_; }
                                             set{    listOfCoins_ = value; }
@@ -97,12 +100,20 @@ namespace AddToPng
             if(listOfCoins.Any())
                 count = listOfCoins.Count;
         }
-        private void setvalue(){ //Need more logic
-            value = 0;
+        private void setStoredValue(){ //Need more logic
+            storedVal = 0;
             int temp = 0;
             foreach(CoinClass coin in listOfCoins){
                 Int32.TryParse(coin.strVal, out temp);
-                value += temp;
+                storedVal += temp;
+            }
+        }
+        private void setStagedVal(){ //Need more logic
+            stagedVal = 0;
+            int temp = 0;
+            foreach(CoinClass coin in listOfStagedCoins){
+                Int32.TryParse(coin.strVal, out temp);
+                stagedVal += temp;
             }
         }
         private void setListOfCoins()
@@ -157,8 +168,10 @@ namespace AddToPng
             if(hasCoins){
                 setListOfCoins(); //done
                 setcount(); //done
-                setvalue(); //done
-            } 
+                setStoredValue(); //done
+            }
+            if(hasStagedCoins)
+                setStagedVal(); 
         }
 
 
@@ -248,7 +261,7 @@ namespace AddToPng
                                 addCoins = false;
                             break;
                             default:
-                                ccPath = ccPaths[choice]; //Choose the cloudcoin to be added to the png.
+                                ccPath = ccPaths[choice - 1]; //Choose the cloudcoin to be added to the png.
                                 coin = new CoinClass(ccPath);
                                 listOfStagedCoins.Add(coin);
                                 Console.WriteLine("staged: ");
@@ -270,6 +283,7 @@ namespace AddToPng
                                     "Value:     " + coin.strVal + "              "
                     );
                 Console.WriteLine("-staged-");
+                setStagedVal();
                 }
                 return;
             }//end try
