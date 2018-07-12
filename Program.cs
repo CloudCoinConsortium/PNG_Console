@@ -72,24 +72,40 @@ namespace AddToPng
             bool makingChanges = true;
             while (makingChanges)
             {
-                setStatus(png);
-                int choice = Utils.printOptions(); //Display user choices.
+                
+                int choice = 0;
+                string a =  "\u00A4 " ; 
+                Console.WriteLine( a) ; 
+                try
+                {
+                    setStatus(png);
+                    choice = Utils.printOptions(); //Display user choices.
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Exception: " + e);
+                }
+                
                 switch (choice)
                 {
-                    case 1://select new png file.
+                    case 1://add new png.
                         png = new PngClass();
                         break;
-                    case 2://select cloudcoins
+                    case 2://select new png file.
+                        png = new PngClass(true);
+                        break;
+                    case 3://select cloudcoins
                         png.stageCoins();
                         break;
-                    case 3://insert cloudcoins to png ([byte[] data][string Names][int length])
+                    case 4://insert cloudcoins to png ([byte[] data][string Names][int length])
                         if(png.hasStagedCoins)
                             png.SaveCoins();
+                        png.updatePNG();
                         break;
-                    case 4://retrieve cloudcoins from png
+                    case 5://retrieve cloudcoins from png
                         png.removeCoins();
                         break;
-                    case 5://quit
+                    case 6://quit
                         makingChanges = false;//Select the png file.
                         break;
                 }
@@ -99,44 +115,58 @@ namespace AddToPng
             }
         }// end runProgram
         private void setStatus(PngClass png){ 
-            if(png.hasCoins)
-            {
-                List<CoinClass> coinList = png.listOfCoins;               
-                status = new string[] {
+            //For saved coins.
+            status = new string[] {
                   "File: " + png.name,
                   "Coins found: " + png.count, 
                   "Value of png: " + png.storedVal
                 };
+            if(png.hasCoins)
+            {
+                List<CoinClass> coinList = png.listOfCoins;               
+                string[] hasCoinsStatus = new string[coinList.Count()];
+                int n = 0;
                 foreach(CoinClass coin in coinList){
-                    Console.WriteLine("--");
-                    Console.WriteLine(  "Name:       " + coin.name + "\r\n" +
-                                        "Tag:       " + coin.tag + "\r\n" +
-                                        "Sn:       " + coin.sn + "\r\n" +
-                                        "Value:     " + coin.strVal + "              "
-                    );
-                    Console.WriteLine("--");
-                }
+                    hasCoinsStatus[n] = "Name:       " + coin.name + "\r\n" + "Value:     " + coin.strVal;
+                    n++;
+                }//end foreach
             }
+
+
+            //For staged coins.
+            string[] updateStagedCoins;
+            string[] stagedUpdate = new string[] {"--Staged value: ","--Staged count: "};
             if(png.hasStagedCoins)
             {
-                string names = "Name:       ";
                 int stagedVal = 0;
                 string stagedStrVal = "";
                 int i = 0;
-                string[] updateStagedCoins = new string[png.listOfStagedCoins.Count()];
+                updateStagedCoins = new string[png.listOfStagedCoins.Count()];
                 foreach(CoinClass coin in png.listOfStagedCoins){
-                    updateStagedCoins[i] = coin.name + ": Staged            ";
-                    stagedVal += coin.intVal;
+                    updateStagedCoins[i] = coin.name + ": ";
+                    int temp = 0;
+                    Int32.TryParse(coin.strVal, out temp);
+                    stagedVal += temp;
                     i++;
                 }
-                stagedStrVal = stagedVal.ToString();
-                Utils.consolePrintList(updateStagedCoins, false, "Staged coins: ", false);
-                Console.WriteLine("                     -----                       ");
-                Console.WriteLine("--Staged value: " + png.stagedVal);
-                Console.WriteLine("--Staged count: " + png.listOfStagedCoins.Count());
                 
+                stagedStrVal = stagedVal.ToString();
+                stagedUpdate[0] += stagedStrVal;
+                stagedUpdate[1] += png.listOfStagedCoins.Count().ToString();
+
+                // Utils.consolePrintList(updateStagedCoins, false, "Staged coins: ", false);
+                
+                Console.WriteLine("                     -----                       ");
+                Utils.consolePrintList(stagedUpdate, false, "Staged status: ", false);
+               
+                
+            }else{
+                updateStagedCoins = new string[0];
+                stagedUpdate[0] += "0";
+                stagedUpdate[1] += "0";
             }
-            
+
+             
             Utils.consolePrintList(status_, false, "Updates: ", false);
         }//end status()
     }

@@ -48,8 +48,13 @@ namespace AddToPng
         {
             Console.Out.WriteLine("");
             Console.Out.WriteLine(message);
-            //
-            int choice = reader.readInt(0, maxNum);
+            int choice = 0;
+            try{
+                choice = reader.readInt(0, maxNum);
+            }catch(Exception e){
+                Console.WriteLine("Exception: 2" + e);
+                choice = 0;
+            }
             return choice;
         }
         //Method to prompt a user for input. 
@@ -71,14 +76,23 @@ namespace AddToPng
         {
             string note = "Enter your selection: ";
             string[] userChoices = new string[] {
-                "Select your PNG                                                       ",   //Option 1
-                "Select your CloudCoins                                                ",   //Option 2
-                "Insert the CloudCoins into the PNG                                    ",   //Option 3
-                "Get CloudCoins from PNG                                               ",   //Option 4
-                "Quit                                                                  "    //Option 4
+                "Add new png                                                           ",   //Option 1
+                "Select your PNG                                                       ",   //Option 2
+                "Select your CloudCoins                                                ",   //Option 3
+                "Insert the CloudCoins into the PNG                                    ",   //Option 4
+                "Get CloudCoins from PNG                                               ",   //Option 5
+                "Quit                                                                  "    //Option 6
             };
             consolePrintList(userChoices, true, note, false); //1st bool true? message is indexed. 2nd bool, no goBack.
-            return getUserInput(userChoices.Length, note);//7? Range of inputs.
+            try{
+                int selection = getUserInput(userChoices.Length, note);
+                return selection;
+            }catch(Exception e)
+            {   
+                Console.WriteLine("Exception Occured: "  + e);
+                return 0;
+            }
+             //7? Range of inputs.
         } // End print welcome.
 
         public static void ReadBytes(string[] pngInfo, Encoding FileEncoding)

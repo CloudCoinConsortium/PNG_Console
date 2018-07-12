@@ -66,7 +66,6 @@ namespace AddToPng
                 }//end if startcoin
                 else
                     return null;
-            return null;//no coins in file.
         }//end getFromPNG();
 
         //inserts coins into the selected png file. Overwrites initial file.

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace AddToPng
@@ -9,14 +10,34 @@ namespace AddToPng
     public class PngClass
     {
         Utils util = new Utils();
+        KeyboardReader k = new KeyboardReader();
         //Class constructor
         public PngClass(){
             util = new Utils();
-            string filepath = SelectNewPNG();
+            string filepath = SelectNewPNG("./png");
             setpath(filepath); //done
             updatePNG();
         }//End png class constructor.
-
+        public PngClass(bool t){
+            util = new Utils();
+            string filepath = SelectNewPNG("./dumpground");
+            setpath(filepath); //done
+            updatePNG();
+        }//End png class constructor.
+        public void updatePNG(){
+            setname(); //done
+            setPngByteName(); // possible wrong method.
+            setdata(); //done
+            setlength(); //done
+            setHasCoins(); //done
+            if(hasCoins){
+                setListOfCoins(); //done
+                setcount(); //done
+                setStoredValue(); //done
+            }
+            if(hasStagedCoins)
+                setStagedVal(); 
+        }
         // Class memebers.
 
         private byte[] ccStart             = new byte[] {99, 76, 68, 99}; // c L D c
@@ -24,7 +45,7 @@ namespace AddToPng
         private byte[] iEnd                = new byte[] {73,69,78,68}; //IEND
 
             //PNG specific
-        private string name_, path_, designator_;
+        private string name_, workingname_, path_, destpath_, tag_;
         private int length_, count_, storedVal_, stagedVal_;
         private byte[] data_;
         private List <CoinClass> listOfCoins_;
@@ -37,17 +58,23 @@ namespace AddToPng
         public string path{                 get{    return path_; }
                                             set{    path_ = value; }   
             }//end path to png file
+        public string destpath{                 get{    return destpath_; }
+                                            set{    destpath_ = value; }   
+            }//end path to png file
         public int length{                  get{      return length_; }
                                             set{    length_ = value; }
             }//end length of the resulting byte file
         public string name{                 get{    return name_; }
                                             set{    name_ = value; }   
             }//end name of the png file
+        private string workingname{                 get{    return workingname_; }
+                                            set{    workingname_ = value; }   
+            }//end name of the png file
         public byte[] data{                 get{    return data_; }
                                             set{    data_ = value; }
             }//end data of png stored as byte file 
-        public string designator{           get{    return designator_; }
-                                            set{    designator_ = value; }
+        public string tag{           get{    return tag_; }
+                                            set{    tag_ = value; }
             }//end designator currently .png
         public int count{                   get{      return count_; }
                                             set{    count_ = value; }
@@ -80,12 +107,41 @@ namespace AddToPng
         private void setpath(String fp){
             path = fp;
         }//End setPngByteName()
+        private void setdestpath(){
+            destpath =  path.Take(path.Length-1).ToArray().ToString();
+            Console.WriteLine("Destpath: " + destpath);
+        }//End setPngByteName()
         private void setlength(){
             length = data.Length;
         }//setlength()
         private void setname(){
+            ;
             string[] spPath= path.Split('/');
-            name = spPath[spPath.Length-1];
+            string[] spName= spPath[spPath.Length-1].Split('.');
+            name = "";
+            for(int i = 0; i < spName.Length - 1; i++)
+                name += spName[i];
+
+        }//End setname()
+        private void setworkingname(){
+                if(hasCoins)
+                {
+                    string n = Regex.Replace(name, @"\s+", "");
+                    // string currency =  "\u00A4" ; 
+                    if(listOfCoins.Count() == 1)
+                    {
+                        workingname =   storedVal.ToString()  +
+                                        ".CloudCoin." + 
+                                        coin.nn.ToString()  + "." + 
+                                        coin.sn.ToString()  + "." + 
+                                        name + tag + ".png";
+                    }
+                    else
+                    {
+                         workingname =  stagedVal.ToString() + ".CloudCoin." +  "." + n + tag + ".png";                       
+                    }
+                    Console.WriteLine("WN: " + workingname);
+                }
         }//End setname()
         private void setPngByteName(){
             // pngByteName = System.IO.File.ReadAllBytes(name); // wrong method being used?
@@ -93,8 +149,8 @@ namespace AddToPng
         private void setdata(){
             data = System.IO.File.ReadAllBytes(path);
         }//End setPngData()
-        private void setdesignator(){
-            designator = "*.png";
+        private void settag(){
+            tag = "."+Utils.getUserInput(999, "Enter a number for the tag: ");
         }//End setdesignator()
         private void setcount(){ //Need more logic
             if(listOfCoins.Any())
@@ -158,21 +214,7 @@ namespace AddToPng
         private void setHasStagedCoins(){
             hasStagedCoins = listOfStagedCoins.Any();
         }//End setPngData()
-        private void updatePNG(){
-            setname(); //done
-            setPngByteName(); // possible wrong method.
-            setdata(); //done
-            setlength(); //done
-            setdesignator(); //done
-            setHasCoins(); //done
-            if(hasCoins){
-                setListOfCoins(); //done
-                setcount(); //done
-                setStoredValue(); //done
-            }
-            if(hasStagedCoins)
-                setStagedVal(); 
-        }
+
 
 
         //Local class specific methods
@@ -201,12 +243,12 @@ namespace AddToPng
             return positions;
         }// end returnPos()
                 //Methods to select and store the png file.
-        public string SelectNewPNG()
+        public string SelectNewPNG(string path)
         {
             string pngPath = "";
             try
             {
-                string[] pngFilePaths = Directory.GetFiles("./png", "*.png");
+                string[] pngFilePaths = Directory.GetFiles(path, "*.png");
                 Utils.consolePrintList(pngFilePaths, true, "PNG files found: ", true);
                 int selection = Utils.getUserInput(pngFilePaths.Length, "Select the file you wish to use.") - 1;
                 if (selection > -1)
@@ -294,44 +336,93 @@ namespace AddToPng
         }// end getCoins();
         public void SaveCoins()
         { 
-            IEnumerable<byte> bf;
             //Separate the png into two files 
             //Upto and not including 'IEND chunk' -firstHalf
             //The cloudCoin data being inserted -coinBytes
             //Location, type, and crc of IEND) -secondHalf
-
-            foreach(CoinClass coin in listOfStagedCoins)
-            {
-                updatePNG();
-                //Location of the chunk type 'iend'
-                List<int> iendPosition = returnPos(data,iEnd);
-                //iend possition minus 4 bytes for the length. also first byte of coinfile.
-
-                int firstBitLocation = iendPosition[0] - 4; 
-                byte[] coinData = coin.pngChunk.chunk; //the png chunk being inserted.
-                byte[] firstPart = data.Take(firstBitLocation).ToArray();
-                byte[] secondPart = data.Skip(firstBitLocation).Take(12).ToArray();
-                bf = firstPart.Concat(coinData).Concat(secondPart);
-                byte[] finalFile = bf.Take(bf.Count()).ToArray();
-                Console.WriteLine("Saving: ");
-                try//save the png.
+            try//save the png.
                 {
-                    using (var fs = new FileStream("./png/"+name, FileMode.Create, FileAccess.Write))
+                    
+                    string workname =  "dumpground/"+stagedVal.ToString() 
+                    + ".CloudCoin." + Regex.Replace(name, @"\s+", "") + tag + ".png" ; 
+                    System.IO.File.Copy(path, workname);
+                    setpath(workname);
+                    updatePNG();
+           
+
+                    List<int> iendPosition = returnPos(data,iEnd);//Location of the chunk type 'iend'
+                    int bitLocation = iendPosition[0] - 4; // Location of first byte.
+                    int chunksLength = 0;
+
+                    byte[] pngByteFile = data.Take(bitLocation).ToArray();
+                    byte[] pngByteFileEnd = data.Skip(bitLocation).Take(12).ToArray();
+  
+                    foreach(CoinClass coin in listOfStagedCoins)
                     {
-                        fs.Write(finalFile, 0, finalFile.Length);
+                        chunksLength += coin.pngChunk.chunkLength;//end foreach
                     }
-                  updatePNG();
+                    byte[] chunkFile = new byte[chunksLength];
+                    int n = 0;
+                    foreach(CoinClass coin in listOfStagedCoins)
+                    {
+                        foreach(byte b in coin.pngChunk.chunk)
+                        {
+                            chunkFile[n] = b;
+                            n++;
+                        }
+                    }
+                    string h = Hex.Dump(chunkFile);
+                    byte[] th = Encoding.ASCII.GetBytes(h);
+                    using (var fs = new FileStream("DUMP.txt", FileMode.Create, FileAccess.Write))
+                        {
+                        fs.Write(th, 0, th.Length);
+                        }
+
+                    byte[] temp = new byte[chunksLength + data.Length];
+                    
+                    n = 0;
+                    foreach(byte b in temp)
+                    {
+                        if(n < bitLocation){
+                            temp[n]  =   pngByteFile[n];
+                        }
+                        if(n >= bitLocation && n < bitLocation + chunksLength ){
+                            temp[n]  =   chunkFile[n-bitLocation];
+                        }        
+                        if(n > bitLocation + chunksLength){
+                            temp[n]  =   pngByteFileEnd[n - (bitLocation + chunksLength)];
+                        }
+                            
+                        n++; 
+                    }
+                        
+//r.SelectMany(i => i).ToArray();
+                    byte[] returnFile = temp;
+                    Console.WriteLine("arrayLength: " + returnFile.Length);
+
+
+                    write(returnFile, workname);
+                    listOfStagedCoins.Clear();
+                      
                 }//end try
                 catch (Exception ex)
                 {
                     Console.WriteLine("Exception caught in process: {0}", ex);
                 }//end catch
-            }//end foreach
         }//end saveCoins()
+        private void write(byte[] png, string n)
+        {
+            Console.WriteLine("save " + n);
+            Console.WriteLine(Hex.Dump(png));
+            File.WriteAllBytes(n, png);
+            // using (var fs = new FileStream(n, FileMode.Create, FileAccess.Write))
+            // {
+            //     fs.Write(png, 0, png.Length);
+            // }
+        }
+
         public void removeCoins()
         {
-            int modifier = 0;
-
             while(hasCoins)
             {
                 //Check for the possitions. if startCoin exists there is a coin in the file.

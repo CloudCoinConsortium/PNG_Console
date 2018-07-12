@@ -166,8 +166,7 @@ namespace AddToPng
 
         
         chunk = ccChunk;
-        Console.WriteLine("New Chunk: ");
-        Hex.Dump(chunk);
+        // Console.WriteLine("New Chunk: ");
 
     }
 

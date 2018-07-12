@@ -26,7 +26,7 @@ namespace AddToPng
             setName();
             setTag();
             setIntVal();
-            Console.WriteLine("<CoinClass> ccPath Data is set now");
+            // Console.WriteLine("<CoinClass> ccPath Data is set now");
         }
 
  // Properties.
