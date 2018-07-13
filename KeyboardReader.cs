@@ -23,7 +23,7 @@ namespace AddToPng
 
         private string prompt = "> ";
 
-        private string[] errorMessages;
+        private string[] errorMessages = new string[10];
 
 
 
@@ -125,6 +125,7 @@ namespace AddToPng
             string inputString = "";
             int number = 0;
             bool done = false;
+
             while (!done)
             {
                 try

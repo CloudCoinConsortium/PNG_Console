@@ -14,13 +14,13 @@ namespace AddToPng
         //Class constructor
         public PngClass(){
             util = new Utils();
-            string filepath = SelectNewPNG("./png");
+            string filepath = SelectNewPNG("./Images");
             setpath(filepath); //done
             updatePNG();
         }//End png class constructor.
         public PngClass(bool t){
             util = new Utils();
-            string filepath = SelectNewPNG("./dumpground");
+            string filepath = SelectNewPNG("./ImageBank");
             setpath(filepath); //done
             updatePNG();
         }//End png class constructor.
@@ -115,31 +115,18 @@ namespace AddToPng
             length = data.Length;
         }//setlength()
         private void setname(){
-            ;
-            string[] spPath= path.Split('/');
-            string[] spName= spPath[spPath.Length-1].Split('.');
-            name = "";
-            for(int i = 0; i < spName.Length - 1; i++)
-                name += spName[i];
+            Console.WriteLine("Path: " + path);
+            string[] spPath = path.Split('/');
+            string[] spName = spPath[spPath.Length-1].Split('.');
+            name = spName[spName.Length - 2];
+
 
         }//End setname()
         private void setworkingname(){
-                if(hasCoins)
+            workingname = "ImageBank/\u00A4"+stagedVal.ToString() + ".CloudCoin." + name + tag + ".png";
+                if(hasStagedCoins)
                 {
-                    string n = Regex.Replace(name, @"\s+", "");
-                    // string currency =  "\u00A4" ; 
-                    if(listOfCoins.Count() == 1)
-                    {
-                        workingname =   storedVal.ToString()  +
-                                        ".CloudCoin." + 
-                                        coin.nn.ToString()  + "." + 
-                                        coin.sn.ToString()  + "." + 
-                                        name + tag + ".png";
-                    }
-                    else
-                    {
-                         workingname =  stagedVal.ToString() + ".CloudCoin." +  "." + n + tag + ".png";                       
-                    }
+                    workingname = "ImageBank/\u00A4"+(stagedVal + storedVal).ToString() + ".CloudCoin." + name + tag + ".png";
                     Console.WriteLine("WN: " + workingname);
                 }
         }//End setname()
@@ -285,7 +272,6 @@ namespace AddToPng
                         // Console.WriteLine(coinPath);
                         coin = new CoinClass(coinPath);
                         Console.WriteLine("stage Coins: ");
-                        Hex.Dump(coin.pngChunk.chunk);
                         listOfStagedCoins.Add(coin);
                     }
                     addCoins = false;  
@@ -342,11 +328,15 @@ namespace AddToPng
             //Location, type, and crc of IEND) -secondHalf
             try//save the png.
                 {
+                    setworkingname();
+                    string workname = workingname;
+                    if(!File.Exists(workname)) 
+                    {
+                        System.IO.File.Copy(path, workname);
+                        setpath(workname);
+                    }  
                     
-                    string workname =  "dumpground/"+stagedVal.ToString() 
-                    + ".CloudCoin." + Regex.Replace(name, @"\s+", "") + tag + ".png" ; 
-                    System.IO.File.Copy(path, workname);
-                    setpath(workname);
+                    
                     updatePNG();
            
 
@@ -371,13 +361,6 @@ namespace AddToPng
                             n++;
                         }
                     }
-                    string h = Hex.Dump(chunkFile);
-                    byte[] th = Encoding.ASCII.GetBytes(h);
-                    using (var fs = new FileStream("DUMP.txt", FileMode.Create, FileAccess.Write))
-                        {
-                        fs.Write(th, 0, th.Length);
-                        }
-
                     byte[] temp = new byte[chunksLength + data.Length];
                     
                     n = 0;
@@ -410,75 +393,60 @@ namespace AddToPng
                     Console.WriteLine("Exception caught in process: {0}", ex);
                 }//end catch
         }//end saveCoins()
-        private void write(byte[] png, string n)
+        private void write(byte[] bytes, string path)
         {
-            Console.WriteLine("save " + n);
-            Console.WriteLine(Hex.Dump(png));
-            File.WriteAllBytes(n, png);
-            // using (var fs = new FileStream(n, FileMode.Create, FileAccess.Write))
-            // {
-            //     fs.Write(png, 0, png.Length);
-            // }
+            Console.WriteLine("save " +path);
+            File.WriteAllBytes(path, bytes);
         }
 
         public void removeCoins()
         {
-            while(hasCoins)
+            updatePNG();
+
+            if(hasCoins)
             {
-                //Check for the possitions. if startCoin exists there is a coin in the file.
-                List<int> startCoin = returnPos(data, ccStart); //marks first "cLDc" tag in file.
-                startCoin.Sort();
-                List<int> endCoin = returnPos(data, ccEnd); // {?$}
-                endCoin.Sort();
-                
-                if(startCoin.Any())
+                foreach(CoinClass coin in listOfCoins)
                 {
-                    int startC = startCoin[0] - 3; //Marks the first instance of cLDc in the png file + 4 to negate the cLDc type.
-                    int endC = endCoin[0] + 8; //Marks the first instace of the end sequence "}]}" + 3 for the matching bytes + 4 for crc.
-                    int diff = (endC - startC);
-
-                    int n = 0;
-                    byte[] newFile = new byte[length - diff - 1]; //the size of the new file. 
-                    byte[] thisCoin = data.Skip(startC+7).Take(diff-15).ToArray();
-                    for(int i = 0; i < length; i++)
-                    {
-                        if(i<startC || i > endC)
-                        {
-                            newFile[n] = data[i];
-                            n++;
-                        }//end if
-                    }//end for
-
-
                      try//save the coin.
                     {
-                        CoinClass cc = new CoinClass(thisCoin);
-                        using (var fs = new FileStream("./Printouts/"+cc.name, FileMode.Create, FileAccess.Write))
-                        {
-                            fs.Write(cc.ccData, 0, cc.ccData.Length);
-                        }
+                        write(coin.ccData, "./Printouts/"+coin.name);
                     }//end try
                     catch (Exception ex)
                     {
                         Console.WriteLine("Exception caught in process: {0}", ex);
                     }//end catch
+                }//end if startCoinv
+            }
+            int[] takeTo = returnPos(data, ccStart).ToArray();
+            int start = length;
+            int[] stopAt = returnPos(data, iEnd).ToArray();
+            int stop = 0;
+            Console.WriteLine("len: " + length); 
+            foreach(int i in takeTo)
+            {
+                Console.WriteLine("tt: " + i); 
+                if(i < start){
+                    start = i;
+                }
+                    
+            }
+            foreach(int i in stopAt)
+            {
+                Console.WriteLine("tt: " + i); 
+                if(i > stop)
+                    stop = i;
+            }
+            start -= 4;
+            stop -= 4;
+            int skip = stop - start;
+             Console.WriteLine("Start: " + start);   
+             Console.WriteLine("Skip: " + skip);   
+             Console.WriteLine("Stop: " + stop);   
+            byte[] arr = data.Take(start).ToArray();
+            arr = arr.Concat(data.Skip(stop).Take(12).ToArray()).ToArray();
 
-
-                    try//save the png.
-                    {
-                        using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-                        {
-                            fs.Write(newFile, 0, newFile.Length);
-                        }
-                        updatePNG();
-                    }//end try
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Exception caught in process: {0}", ex);
-                    }//end catch
-
-                }//end if startCoin
-            }//end while.
+            // Console.WriteLine(Hex.Dump(arr.ToArray()));
+            write(arr.ToArray(), "./ImageBank/"+name+".png");
         }//end remove coins
     }
 }

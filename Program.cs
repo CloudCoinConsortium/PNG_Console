@@ -68,14 +68,11 @@ namespace AddToPng
         {
             
             Utils util = new Utils();
-            PngClass png = new PngClass();
+            PngClass png = new PngClass(true);
             bool makingChanges = true;
             while (makingChanges)
             {
-                
                 int choice = 0;
-                string a =  "\u00A4 " ; 
-                Console.WriteLine( a) ; 
                 try
                 {
                     setStatus(png);
@@ -91,7 +88,7 @@ namespace AddToPng
                     case 1://add new png.
                         png = new PngClass();
                         break;
-                    case 2://select new png file.
+                    case 2://select a png file.
                         png = new PngClass(true);
                         break;
                     case 3://select cloudcoins
