@@ -15,9 +15,10 @@ Contains code and standards for the insertion of CloudCoins into PNG.
 3) Select your CloudCoins.
 `Allows user to select one or multiple CloudCoin stacks found in the Bank folder.`
 4) Insert the CloudCoins into the PNG.
-`Inserts the CloudCoins as a value in an Ape tag item with a key of CloudCoinStack.`
+`Inserts the CloudCoins as a png chunk with the with the chunk type designator of cLDc.`
 5) CloudCoins to Printouts folder.
-`Searches the file for the Ape's key item (cloudcoinstack), creates a new file with the stacks original name, then writes the data to the file.`
+`Searches the file for cLDc chunk types, copies the information to the printouts folder.`
+`Creates a new image without the CloudCoin meta data.`
 
 
 
@@ -101,7 +102,7 @@ Duplicates the image without the CloudCoin data.
 `
 
 #### PNG Standard
-![PNG Standard](./Standards/PNG_Header_Standard.png)
+![Standard](./Standards/PNG_Header_Standard.png)
 
 [Header](./Standards/PNG_Header_Standard.png)  |  [Body](./Standards/PNG_Body_Standard.png) 
 
