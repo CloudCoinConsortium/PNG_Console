@@ -10,7 +10,6 @@ namespace AddToPng
     public class PngClass
     {
         Utils util = new Utils();
-        KeyboardReader k = new KeyboardReader();
         //Class constructor
         public PngClass(){
             util = new Utils();
@@ -118,11 +117,20 @@ namespace AddToPng
             Console.WriteLine("Path: " + path);
             string[] spPath = path.Split('/');
             string[] spName = spPath[spPath.Length-1].Split('.');
-            name = spName[spName.Length - 2];
+            if(spName.Length > 2)
+            {
+                tag = spName[spName.Length - 2];
+                name = spName[spName.Length - 3];
+            }
+            else{
+                name = spName[spName.Length - 2];
+            }
+            
 
 
         }//End setname()
         private void setworkingname(){
+            settag();
             workingname = "ImageBank/\u00A4"+stagedVal.ToString() + ".CloudCoin." + name + tag + ".png";
                 if(hasStagedCoins)
                 {
@@ -137,7 +145,7 @@ namespace AddToPng
             data = System.IO.File.ReadAllBytes(path);
         }//End setPngData()
         private void settag(){
-            tag = "."+Utils.getUserInput(999, "Enter a number for the tag: ");
+            tag = "."+Utils.readString(9,"Enter a tag or press enter: ");
         }//End setdesignator()
         private void setcount(){ //Need more logic
             if(listOfCoins.Any())
@@ -237,10 +245,10 @@ namespace AddToPng
             {
                 string[] pngFilePaths = Directory.GetFiles(path, "*.png");
                 Utils.consolePrintList(pngFilePaths, true, "PNG files found: ", true);
-                int selection = Utils.getUserInput(pngFilePaths.Length, "Select the file you wish to use.") - 1;
+                int selection = Utils.getUserInput(pngFilePaths.Length, "Select the file you wish to use.");
                 if (selection > -1)
                 {
-                    pngPath = pngFilePaths[selection];//File path.
+                    pngPath = pngFilePaths[selection-1];//File path.
                     return pngPath;
                 }
                 else
@@ -417,6 +425,10 @@ namespace AddToPng
                     }//end catch
                 }//end if startCoinv
             }
+
+
+            //Create a new image file without the cloud coin date.
+
             int[] takeTo = returnPos(data, ccStart).ToArray();
             int start = length;
             int[] stopAt = returnPos(data, iEnd).ToArray();
@@ -436,8 +448,8 @@ namespace AddToPng
                 if(i > stop)
                     stop = i;
             }
-            start -= 4;
-            stop -= 4;
+            start -= 4; // 4 bytes for length
+            stop -= 4;  // 4 bytes for length
             int skip = stop - start;
              Console.WriteLine("Start: " + start);   
              Console.WriteLine("Skip: " + skip);   

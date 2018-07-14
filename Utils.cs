@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AddToPng
 {
@@ -7,7 +8,7 @@ namespace AddToPng
         
         public string[] printError = new string[1];
          
-        public static KeyboardReader reader = new KeyboardReader();
+        // public static KeyboardReader reader = new KeyboardReader();
 
         //Methods accepts an array of strings. 
         //If indexed? indecese will be numbered 1 through selection.Length. 
@@ -50,7 +51,20 @@ namespace AddToPng
             Console.Out.WriteLine(message);
             int choice = 0;
             try{
-                choice = reader.readInt(0, maxNum);
+                string returnStr = Console.ReadLine();
+                Regex reg = new Regex("^[0-9]*$");
+                
+                if(reg.IsMatch(returnStr)){
+                    int numb = 0;
+                    Int32.TryParse(returnStr,out numb);
+                    Console.WriteLine(numb);
+                    if(numb <= maxNum)
+                        return numb;
+                    return getUserInput(maxNum, "Only 0-9 are allowed! max: " + maxNum);
+                }
+                else{
+                    return getUserInput(maxNum, "Only 0-9 are allowed! max: " + maxNum);
+                }
             }catch(Exception e){
                 Console.WriteLine("Exception: 2" + e);
                 choice = 0;
@@ -80,7 +94,7 @@ namespace AddToPng
                 "Select your PNG                                                       ",   //Option 2
                 "Select your CloudCoins                                                ",   //Option 3
                 "Insert the CloudCoins into the PNG                                    ",   //Option 4
-                "Get CloudCoins from PNG                                               ",   //Option 5
+                "CloudCoins to Printouts folder                                        ",   //Option 5
                 "Quit                                                                  "    //Option 6
             };
             consolePrintList(userChoices, true, note, false); //1st bool true? message is indexed. 2nd bool, no goBack.
@@ -101,6 +115,21 @@ namespace AddToPng
             byte[] MyPng = System.IO.File.ReadAllBytes(pngInfo[1]);
             string ByteFile = Hex.Dump(MyPng); //Store Hex the Hex data from the Png file.
             System.IO.File.WriteAllText("./Printouts/HexPrintout_"+pngInfo[2]+".txt", ByteFile); //Create a document containing Png ByteFile (debugging).
+        }
+        public static string readString(int max, string message)
+        {
+            Console.WriteLine(message);
+            string returnStr = Console.ReadLine();
+            Regex reg = new Regex("^[a-zA-Z0-9]*$");
+
+            if(reg.IsMatch(returnStr) && returnStr.Length <= max){
+                if(returnStr.Length < 1)
+                    return "tag";
+                return returnStr;
+            }
+            else{
+                return readString(max, "Only letters a-z,A-Z and numbers 0-9 are allowed! ");
+            }
         }
     }
 }

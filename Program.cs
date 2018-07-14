@@ -112,12 +112,11 @@ namespace AddToPng
             }
         }// end runProgram
         private void setStatus(PngClass png){ 
+
             //For saved coins.
-            status = new string[] {
-                  "File: " + png.name,
-                  "Coins found: " + png.count, 
-                  "Value of png: " + png.storedVal
-                };
+            string sCount = "0";
+            string sVal = "0";
+
             if(png.hasCoins)
             {
                 List<CoinClass> coinList = png.listOfCoins;               
@@ -129,14 +128,11 @@ namespace AddToPng
                 }//end foreach
             }
 
-
             //For staged coins.
             string[] updateStagedCoins;
-            string[] stagedUpdate = new string[] {"--Staged value: ","--Staged count: "};
             if(png.hasStagedCoins)
             {
                 int stagedVal = 0;
-                string stagedStrVal = "";
                 int i = 0;
                 updateStagedCoins = new string[png.listOfStagedCoins.Count()];
                 foreach(CoinClass coin in png.listOfStagedCoins){
@@ -147,23 +143,25 @@ namespace AddToPng
                     i++;
                 }
                 
-                stagedStrVal = stagedVal.ToString();
-                stagedUpdate[0] += stagedStrVal;
-                stagedUpdate[1] += png.listOfStagedCoins.Count().ToString();
-
+                sVal = stagedVal.ToString();
+                sCount = i.ToString();
                 // Utils.consolePrintList(updateStagedCoins, false, "Staged coins: ", false);
                 
                 Console.WriteLine("                     -----                       ");
-                Utils.consolePrintList(stagedUpdate, false, "Staged status: ", false);
+
                
                 
             }else{
                 updateStagedCoins = new string[0];
-                stagedUpdate[0] += "0";
-                stagedUpdate[1] += "0";
             }
 
-             
+            status = new string[] {
+                  "File:                    " + png.name +"."+png.tag,
+                  "Coins found:             " + png.count, 
+                  "Value of png:            " + png.storedVal,
+                  "Coins staged:            " + sCount,
+                  "Value of staged Coins:   " + sVal
+                };  
             Utils.consolePrintList(status_, false, "Updates: ", false);
         }//end status()
     }
