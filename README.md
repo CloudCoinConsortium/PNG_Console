@@ -10,13 +10,13 @@ Contains code and standards for the insertion of CloudCoins into PNG.
 ## Summary of implementation
 
 1) Add new png.
-`Allows the user to target an PNG image from the "png" folder. `
+`Allows the user to target a PNG image from the "png" folder. `
 2) Select your png.
-`Allows the user to target an PNG image from the "Image Bank" folder. `
+`Allows the user to target a PNG image from the "Image Bank" folder. `
 3) Select your CloudCoins.
-`Allows user to select one or multiple CloudCoin stacks found in the Bank folder.`
+`Allows a user to select one or multiple CloudCoin stacks found in the Bank folder.`
 4) Insert the CloudCoins into the PNG.
-`Inserts the CloudCoins as a png chunk with the with the chunk type designator of cLDc.`
+`Inserts the CloudCoins as a png chunk with the chunk type designator of cLDc.`
 5) CloudCoins to Printouts folder.
 `Searches the file for cLDc chunk types, copies the information to the printouts folder.`
 `Creates a new image without the CloudCoin meta data.`
@@ -94,18 +94,10 @@ Duplicates the image without the CloudCoin data.
 ```
 
 
-
-
-
-
-
-
-`
-
 #### PNG Standard
-![Standard](./Standards/PNG_Header_Standard.png)
+![Standard](./standards/PNG_Header_Standard.png)
 
-[Header](./Standards/PNG_Header_Standard.png)  |  [Body](./Standards/PNG_Body_Standard.png) 
+[Header](./standards/PNG_Header_Standard.png)  |  [Body](./Standards/PNG_Body_Standard.png) 
 
 
 
